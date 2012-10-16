@@ -4,10 +4,11 @@ fs =   require 'fs'
 jsp =   require("uglify-js").parser
 pro =   require("uglify-js").uglify
 clean  = require 'clean-css'
+logger = require 'mimosa-logger'
 
 class MimosaMinifyModule
 
-  lifecycleRegistration: (config, register, @logger) ->
+  lifecycleRegistration: (config, register) ->
     e = config.extensions
 
     if config.min
@@ -29,9 +30,9 @@ class MimosaMinifyModule
         excluded = @exclude?.some (path) -> fileName.match(path)
 
         if excluded
-          @logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded."
+          logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded."
         else
-          @logger.debug "Running minification on [[ #{fileName} ]]"
+          logger.debug "Running minification on [[ #{fileName} ]]"
           file.outputFileText = @performJSMinify(text, fileName)
 
       next() if ++i is options.files.length
@@ -39,7 +40,7 @@ class MimosaMinifyModule
   _minifyCSS: (config, options, next) =>
     return next() unless options.files?.length > 0
 
-    @logger.debug "Cleaning/optimizing CSS [[ #{options.files} ]]"
+    logger.debug "Cleaning/optimizing CSS [[ #{options.files} ]]"
     i = 0
     options.files.forEach (file) ->
       file.outputFileText = clean.process file.outputFileText
@@ -52,6 +53,6 @@ class MimosaMinifyModule
       text = pro.ast_squeeze text
       pro.gen_code text
     catch err
-      @logger.warn "Minification failed on [[ #{fileName} ]], writing unminified source\n#{err}"
+      logger.warn "Minification failed on [[ #{fileName} ]], writing unminified source\n#{err}"
 
 module.exports = new MimosaMinifyModule()
