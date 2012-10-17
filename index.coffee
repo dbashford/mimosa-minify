@@ -11,12 +11,12 @@ class MimosaMinifyModule
   lifecycleRegistration: (config, register) ->
     e = config.extensions
 
-    if config.min
+    if config.isMinify
       @exclude = config.minify.exclude
       register ['add','update','buildFile'],      'afterCompile', @_minifyJS,  [e.javascript...]
       register ['add','update','buildExtension'], 'beforeWrite',  @_minifyJS,  [e.template...]
 
-    if config.optimize or config.min
+    if config.isOptimize or config.isMinify
       register ['add','update','buildExtension'], 'afterCompile', @_minifyCSS, [e.css...]
 
   _minifyJS: (config, options, next) =>
