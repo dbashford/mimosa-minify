@@ -15,7 +15,7 @@ exports.placeholder = ->
 exports.validate = (config) ->
   errors = []
   if config.minify?
-    if typeof config.minify is "object"
+    if typeof config.minify is "object" and not Array.isArray(config.minify)
       if config.minify.exclude?
         if Array.isArray(config.minify.exclude)
           for ex in config.minify.exclude
