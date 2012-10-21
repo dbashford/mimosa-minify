@@ -30,9 +30,7 @@ _minifyJS = (config, options, next) =>
     fileName = file.outputFileName
     text = file.outputFileText
     if fileName and text
-      excluded = config.minify.exclude?.some (path) -> fileName.match(path)
-
-      if excluded
+      if @config.minify.exclude and fileName.match @config.minify.exclude
         logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded."
       else
         logger.debug "Running minification on [[ #{fileName} ]]"
