@@ -1,7 +1,7 @@
 jsp =   require("uglify-js").parser
 pro =   require("uglify-js").uglify
 clean  = require 'clean-css'
-logger = require 'mimosa-logger'
+logger = require 'logmimosa'
 
 exports.registration = (config, register) ->
   e = config.extensions
