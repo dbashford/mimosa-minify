@@ -13,7 +13,7 @@ exports.registration = (config, register) ->
   if config.isOptimize or config.isMinify
     register ['add','update','buildExtension'], 'beforeWrite', _minifyCSS, [e.css...]
 
-exports.performJSMinify = (source, fileName) ->
+_performJSMinify = (source, fileName) ->
   try
     text = jsp.parse source
     text = pro.ast_mangle text, {except:['require','requirejs','define']}
@@ -34,7 +34,7 @@ _minifyJS = (config, options, next) =>
         logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded."
       else
         logger.debug "Running minification on [[ #{fileName} ]]"
-        file.outputFileText = exports.performJSMinify(text, fileName)
+        file.outputFileText = _performJSMinify(text, fileName)
 
     next() if ++i is options.files.length
 
