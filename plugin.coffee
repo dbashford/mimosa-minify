@@ -1,3 +1,5 @@
+"use strict"
+
 jsp =   require("uglify-js").parser
 pro =   require("uglify-js").uglify
 clean  = require 'clean-css'

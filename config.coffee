@@ -1,3 +1,5 @@
+"use strict"
+
 exports.defaults = ->
   minify:
     exclude:["\\.min\\."]
