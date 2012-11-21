@@ -32,8 +32,10 @@ _minifyJS = (config, options, next) =>
     fileName = file.outputFileName
     text = file.outputFileText
     if fileName and text
-      if config.minify.exclude and fileName.match config.minify.exclude
-        logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded."
+      if config.minify.excludeRegex and fileName.match config.minify.excludeRegex
+        logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded with a regex."
+      else if config.minify.exclude.indexOf(fileName) > -1
+        logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded with a string path."
       else
         logger.debug "Running minification on [[ #{fileName} ]]"
         file.outputFileText = _performJSMinify(text, fileName)
@@ -43,8 +45,16 @@ _minifyJS = (config, options, next) =>
 _minifyCSS = (config, options, next) =>
   return next() unless options.files?.length > 0
 
-  logger.debug "Cleaning/optimizing CSS [[ #{options.files} ]]"
   i = 0
   options.files.forEach (file) ->
-    file.outputFileText = clean.process file.outputFileText
+    fileName = file.outputFileName
+    text = file.outputFileText
+    if config.minify.excludeRegex and fileName.match config.minify.excludeRegex
+      logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded with a regex."
+    else if config.minify.exclude.indexOf(fileName) > -1
+      logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded with a string path."
+    else
+      logger.debug "Running minification on [[ #{fileName} ]]"
+      file.outputFileText = clean.process text
+
     next() if ++i is options.files.length
