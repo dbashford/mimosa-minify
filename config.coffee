@@ -1,9 +1,5 @@
 "use strict"
 
-path = require 'path'
-
-windowsDrive = /^[A-Za-z]:\\/
-
 exports.defaults = ->
   minify:
     exclude:[/\.min\./]
@@ -22,37 +18,9 @@ exports.placeholder = ->
                                   # so '.js' rather than '.coffee'
   """
 
-exports.validate = (config) ->
+exports.validate = (config, validators) ->
   errors = []
-  if config.minify?
-    if typeof config.minify is "object" and not Array.isArray(config.minify)
-
-      if config.minify.exclude?
-        if Array.isArray(config.minify.exclude)
-          regexes = []
-          newExclude = []
-          for exclude in config.minify.exclude
-            if typeof exclude is "string"
-              newExclude.push __determinePath exclude, config.watch.compiledDir
-            else if exclude instanceof RegExp
-              regexes.push exclude.source
-            else
-              errors.push "minify.exclude must be an array of strings and/or regexes."
-              break
-
-          if regexes.length > 0
-            config.minify.excludeRegex = new RegExp regexes.join("|"), "i"
-
-          config.minify.exclude = newExclude
-        else
-          errors.push "minify.exclude must be an array."
-
-    else
-      errors.push "minify configuration must be an object."
+  if validators.ifExistsIsObject(errors, "minify config", config.minify)
+    validators.ifExistsFileExcludeWithRegexAndString(errors, "minify.exclude", config.minify, config.watch.compiledDir)
 
   errors
-
-__determinePath = (thePath, relativeTo) ->
-  return thePath if windowsDrive.test thePath
-  return thePath if thePath.indexOf("/") is 0
-  path.join relativeTo, thePath
