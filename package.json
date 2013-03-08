@@ -1,6 +1,6 @@
 {
   "name": "mimosa-minify",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "homepage": "http://www.mimosajs.com",
   "author": "David Bashford",
   "description": "Minification module for Mimosa browser development workflow tool",
@@ -25,8 +25,8 @@
     "mmodule"
   ],
   "dependencies": {
-    "clean-css": "0.9.1",
-    "uglify-js": "2.2.3",
+    "clean-css": "0.10.1",
+    "uglify-js": "2.2.5",
     "logmimosa": "0.4.0"
   },
   "license": "MIT",
