@@ -67,7 +67,8 @@ _performJSMinify = (file, isBuild) ->
     {code:source}
 
 _minifyJS = (config, options, next) =>
-  return next() unless options.files?.length > 0
+  hasFiles = options.files?.length > 0
+  return next() unless hasFiles
 
   i = 0
   maps = []
@@ -92,7 +93,8 @@ _minifyJS = (config, options, next) =>
     done() if ++i is options.files.length
 
 _minifyCSS = (config, options, next) =>
-  return next() unless options.files?.length > 0
+  hasFiles = options.files?.length > 0
+  return next() unless hasFiles
 
   i = 0
   options.files.forEach (file) ->
