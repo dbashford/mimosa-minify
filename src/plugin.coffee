@@ -1,13 +1,7 @@
 "use strict"
 
-###
-TODO
-1) Config for maps or no maps
-2) if maps configed and not build , create and write map to name.map and write original unminified source to name.source
-3) Handle clean
-###
-
 path = require "path"
+fs = require "fs"
 
 uglify = require "uglify-js"
 clean  = require 'clean-css'
@@ -23,24 +17,25 @@ exports.registration = (config, register) ->
   if config.isOptimize or config.isMinify
     register ['add','update','buildExtension'], 'beforeWrite', _minifyCSS, [e.css...]
 
-_performJSMinify = (file, isBuild) ->
+_performJSMinify = (config, file) ->
   source = file.outputFileText
   inFileName = file.inputFileName
   outFileName = file.outputFileName
+  rootName = outFileName.replace(path.extname(outFileName), '')
+  mapName = "#{rootName}.map"
+  createSourceMap = not config.isBuild and file.sourceMap?
 
   try
-    #stream = if isBuild
-    stream = uglify.OutputStream()
-    ###
-    else
+    stream = if createSourceMap
       source_map = uglify.SourceMap
         file: outFileName
-        root: undefined
-        orig: undefined
+        root: inFileName
+        orig: JSON.parse(file.sourceMap)
       uglify.OutputStream source_map: source_map
-    ###
+    else
+      uglify.OutputStream()
 
-    toplevel_ast = uglify.parse source, {filename:inFileName}
+    toplevel_ast = uglify.parse source, {filename:outFileName}
     toplevel_ast.figure_out_scope()
     compressor = uglify.Compressor warnings:false
     compressed_ast = toplevel_ast.transform compressor
@@ -48,37 +43,39 @@ _performJSMinify = (file, isBuild) ->
     compressed_ast.compute_char_frequency()
     compressed_ast.mangle_names({except:['require','requirejs','define','exports','module']})
     compressed_ast.print(stream)
-
     code = stream+""
 
-    ###
-    unless isBuild
-      mapName = "#{path.basename(outFileName)}.json"
-      mapOutputFile = path.join path.dirname(outFileName), mapName
-      code += "\n//@ sourceMappingURL=file://" + mapOutputFile
-      mapInfo = {outputFileName:mapOutputFile, outputFileText:source_map+""}
-    ###
+    if createSourceMap
+      code += "\n/*\n//@ sourceMappingURL=" + path.basename(file.sourceMapName)
+      code += "\n*/\n"
 
-    #{code:code, mapInfo:mapInfo}
-    {code:code, mapInfo:null}
+      sourceMapRoot = inFileName.replace(path.basename(inFileName), '')
+      sourceMapRoot = sourceMapRoot.replace(config.watch.sourceDir, '')
+      sourceMapRoot = sourceMapRoot.slice(0, -1)
+      sourceMapJSON = JSON.parse(source_map.toString())
+      sourceMapJSON.sourceRoot = sourceMapRoot
+
+      mapInfo = {outputFileName:file.sourceMapName, outputFileText:JSON.stringify(sourceMapJSON)}
+
+    {code:code, mapInfo:mapInfo}
 
   catch err
     logger.warn "Minification failed on [[ #{outFileName} ]], writing unminified source\n#{err}"
     {code:source}
 
-_minifyJS = (config, options, next) =>
+_minifyJS = (config, options, next) ->
   hasFiles = options.files?.length > 0
   return next() unless hasFiles
 
   i = 0
   maps = []
 
-  done = =>
+  done = ->
     if maps.length > 0
       options.files.push mapInfo for mapInfo in maps
     next()
 
-  options.files.forEach (file) =>
+  options.files.forEach (file) ->
     if file.outputFileName and file.outputFileText
       if config.minify.excludeRegex and file.outputFileName.match config.minify.excludeRegex
         logger.debug "Not going to minify [[ #{file.outputFileName} ]], it has been excluded with a regex."
@@ -86,13 +83,14 @@ _minifyJS = (config, options, next) =>
         logger.debug "Not going to minify [[ #{file.outputFileName} ]], it has been excluded with a string path."
       else
         logger.debug "Running minification on [[ #{file.outputFileName} ]]"
-        minified = _performJSMinify(file, config.isBuild)
+        minified = _performJSMinify config, file
         file.outputFileText = minified.code
-        maps.push minified.mapInfo if minified.mapInfo
+        if minified.mapInfo
+          maps.push minified.mapInfo
 
     done() if ++i is options.files.length
 
-_minifyCSS = (config, options, next) =>
+_minifyCSS = (config, options, next) ->
   hasFiles = options.files?.length > 0
   return next() unless hasFiles
 
