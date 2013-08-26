@@ -46,7 +46,8 @@ _performJSMinify = (config, file) ->
     code = stream+""
 
     if createSourceMap
-      code += "\n/*\n//@ sourceMappingURL=" + path.basename(file.sourceMapName)
+      # @ is deprecated but # not widely supported in current release browsers
+      code += '\n/*\n//@ sourceMappingURL=' + path.basename(file.sourceMapName)
       code += "\n*/\n"
 
       sourceMapRoot = inFileName.replace(path.basename(inFileName), '')
