@@ -11,11 +11,12 @@ exports.registration = (config, register) ->
   e = config.extensions
 
   if config.isMinify
-    register ['add','update','buildFile'],      'beforeWrite', _minifyJS,  [e.javascript...]
-    register ['add','update','buildExtension'], 'beforeWrite',  _minifyJS,  [e.template...]
+    register ['add','update','buildFile'],      'beforeWrite', _minifyJS,  e.javascript
+    register ['add','update','buildExtension'], 'beforeWrite', _minifyJS, e.template
 
   if config.isOptimize or config.isMinify
-    register ['add','update','buildExtension'], 'beforeWrite', _minifyCSS, [e.css...]
+    console.log e.css
+    register ['add','update','buildExtension', 'buildFile'], 'beforeWrite', _minifyCSS, e.css
 
 _performJSMinify = (config, file) ->
   source = file.outputFileText
