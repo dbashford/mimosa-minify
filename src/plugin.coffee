@@ -15,7 +15,6 @@ exports.registration = (config, register) ->
     register ['add','update','buildExtension'], 'beforeWrite', _minifyJS, e.template
 
   if config.isOptimize or config.isMinify
-    console.log e.css
     register ['add','update','buildExtension', 'buildFile'], 'beforeWrite', _minifyCSS, e.css
 
 _performJSMinify = (config, file) ->
