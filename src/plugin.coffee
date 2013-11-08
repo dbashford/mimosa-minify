@@ -4,7 +4,7 @@ path = require "path"
 fs = require "fs"
 
 uglify = require "uglify-js"
-clean  = require 'clean-css'
+clean  = require('clean-css')()
 logger = require 'logmimosa'
 
 exports.registration = (config, register) ->
@@ -106,6 +106,6 @@ _minifyCSS = (config, options, next) ->
       logger.debug "Not going to minify [[ #{fileName} ]], it has been excluded with a string path."
     else
       logger.debug "Running minification on [[ #{fileName} ]]"
-      file.outputFileText = clean.process text
+      file.outputFileText = clean.minify text
 
     next() if ++i is options.files.length
