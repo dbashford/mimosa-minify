@@ -5,11 +5,13 @@ fs = require "fs"
 
 uglify = require "uglify-js"
 clean  = require('clean-css')()
-logger = require 'logmimosa'
+
+logger = null
 
 exports.registration = (config, register) ->
-  e = config.extensions
+  logger = config.log
 
+  e = config.extensions
   if config.isMinify
     register ['add','update','buildFile'],      'beforeWrite', _minifyJS,  e.javascript
     register ['add','update','buildExtension'], 'beforeWrite', _minifyJS, e.template
